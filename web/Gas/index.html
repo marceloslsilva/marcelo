@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" 
+  integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+  crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+  integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+  crossorigin=""></script>
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@2.5.1/dist/esri-leaflet.js"
+  integrity="sha512-q7X96AASUF0hol5Ih7AeZpRF6smJS55lcvy+GLWzJfZN+31/BQ8cgNx2FGF+IQSA4z2jHwB20vml+drmooqzzQ=="
+  crossorigin=""></script>
+  <!-- Include Leaflet.heat from CDN -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- Load Heatmap Feature Layer from CDN -->
+      <script src="https://unpkg.com/esri-leaflet-heatmap@2.0.0"></script>
+
+  <!-- Heatmap Feature Layer -->
+      <script src="https://unpkg.com/esri-leaflet-heatmap@2.0.0/dist/esri-leaflet-heatmap.js"
+      integrity="sha512-fSJJRfO4PK90PN9jKKBzBZmzlNRsR12QA/CqTTWgfUTfLMF1Nrx5ouOqlpzC8LQIP+Qz0/G4BlHSgxHrCLHuMA=="
+      crossorigin=""></script>
+      
+
+    
+     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+
+  <script src="JSON/freuesia.js"></script>
+  <script src="JSON/fibra_otica.js"></script>
+  <script src="JSON/fibra_pontos.js"></script>
+  <script src="JSON/rede_gas.js"></script>
+  <script src="JSON/gas.js"></script>
+
+
+  
+
+ 
+
+  
+  <title>Rede de Gás em Cabeceiras de Basto</title>
+</head>
+<body>
+  
+
+
+ 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <div id="map" style="width: 100%; height: 600px" id="sidebar"></script></div>
+   <!-- Include Leaflet.heat from CDN -->
+   <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+   <!-- Load Heatmap Feature Layer from CDN -->
+   <script src="https://unpkg.com/esri-leaflet-heatmap@2.0.0"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/mapbox-gl@1.13.0/dist/mapbox-gl.css"/>
+  <script src="https://unpkg.com/mapbox-gl@1.13.0/dist/mapbox-gl.js"></script>
+
+   <!-- Load Esri Leaflet Geocoder from CDN -->
+   <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.3.3/dist/esri-leaflet-geocoder.css"
+   integrity="sha512-IM3Hs+feyi40yZhDH6kV8vQMg4Fh20s9OzInIIAc4nx7aMYMfo+IenRUekoYsHZqGkREUgx0VvlEsgm7nCDW9g=="
+   crossorigin="">
+ <script src="https://unpkg.com/esri-leaflet-geocoder@2.3.3/dist/esri-leaflet-geocoder.js"
+   integrity="sha512-HrFUyCEtIpxZloTgEKKMq4RFYhxjJkCiF5sDxuAokklOeZ68U2NPfh4MFtyIVWlsKtVbK5GD2/JzFyAfvT5ejA=="
+   crossorigin=""></script>
+
+<!-- load the latest release from the cdn automatically -->
+  <script src="https://unpkg.com/esri-leaflet-vector/dist/esri-leaflet-vector-debug.js"></script>
+
+
+
+  <style>
+   
+
+
+  #basemaps-wrapper {
+    position: absolute;
+    top: 20px;
+    right: 70px;
+    z-index: 400;
+    background: white;
+    padding: 10px;
+  }
+  #basemaps {
+    margin-bottom: 5px;
+
+  }
+ 
+ 
+
+  </style>  
+
+  
+  <div id="basemaps-wrapper" class="leaflet-bar">
+    <select id="basemaps">
+      <option value="Topographic">Topographic</option>
+      <option value="Streets">Streets</option>
+      <option value="NationalGeographic">National Geographic</option>
+      <option value="Oceans">Oceans</option>
+      <option value="Gray">Gray</option>
+      <option value="DarkGray">Dark Gray</option>
+      <option value="Imagery">Imagery</option>
+      <option value="ImageryClarity">Imagery (Clarity)</option>
+      <option value="ImageryFirefly">Imagery (Firefly)</option>
+      <option value="ShadedRelief">Shaded Relief</option>
+      <option value="Physical">Physical</option>
+    </select>
+  
+  
+
+
+ 
+
+</div>
+
+
+
+
+
+<script>
+
+
+  
+  var map = L.map('map').setView([41.513, -7.99, ], 15.5);
+  var layer = L.esri.basemapLayer('ImageryClarity').addTo(map);
+  var layerLabels;
+
+  function setBasemap (basemap) {
+    if (layer) {
+      map.removeLayer(layer);
+    }
+
+    layer = L.esri.basemapLayer(basemap);
+
+    map.addLayer(layer);
+
+    if (layerLabels) {
+      map.removeLayer(layerLabels);
+    }
+
+    if (
+      basemap === 'ShadedRelief' ||
+      basemap === 'Oceans' ||
+      basemap === 'Gray' ||
+      basemap === 'DarkGray' ||
+      basemap === 'Terrain'
+    ) {
+      layerLabels = L.esri.basemapLayer(basemap + 'Labels');
+      map.addLayer(layerLabels);
+    } else if (basemap.includes('Imagery')) {
+      layerLabels = L.esri.basemapLayer('ImageryLabels');
+      map.addLayer(layerLabels);
+    }
+  }
+
+  document
+    .querySelector('#basemaps')
+    .addEventListener('change', function (e) {
+      var basemap = e.target.value;
+      setBasemap(basemap);
+    });
+
+    
+
+</script>
+
+
+
+
+
+  <script>
+
+    //----------------------cabeceiras-----------------------------------------------
+    function stylefreg(fregcamada){
+                return{
+                    fillColor:"#4040ff",
+                    fillOpacity:0.10,
+                    color:"#4040ff",
+                    weight: 1,
+                };
+            }
+            
+    var fregcamada=L.geoJSON(freuesia,{style: stylefreg})
+    fregcamada.eachLayer(function(layer){layer.bindPopup("<h3 style ='text-align: center;'> <i>Informações</i> </h3><hr/>"+"<h4>Freguesia: <h4>"+layer.feature.properties.Freguesia+"<h4>Concelho: </h4>"+layer.feature.properties.Municipio+"<h4>Distrito: </h4>"+layer.feature.properties.Distrito);
+    });
+    fregcamada.addTo(map);
+        
+ 
+
+    /////rede_gas
+
+
+  
+            
+      var rede_gas =L.geoJSON(rede_gas,{pointToLayer: function (feature, latlng) {
+      var ecosym = 'Icons/gas.png';
+      var ecoicon = L.icon({
+        iconUrl:ecosym ,
+        iconSize: [15, 15]
+      });
+
+      return L.marker(latlng, {
+        icon: ecoicon
+      });
+    }})
+    rede_gas.eachLayer(function(layer){layer.bindPopup("<h5>Arruamento: <h5>"+layer.feature.properties.Arruamento+"<h5>Data Levantamento: <h5>"+layer.feature.properties.AnoInstala);
+    });
+    rede_gas.addTo(map);
+
+
+        /////
+
+        function sty(gas){
+                return{
+                    weight: 2,
+                    color:"#006400",
+                };
+            }
+            
+    var gas =L.geoJSON(gas,{style: sty})
+    gas.eachLayer(function(layer){layer.bindPopup("<h6>Arruamento: <h6>"+layer.feature.properties.Arruamento+"<h6>Ano de Instalação: <h6>"+layer.feature.properties.AnoInstala+"<h6>Tipo: <h6>"+layer.feature.properties.Tipo);
+    });
+    gas.addTo(map);
+
+    var equipgas = L.layerGroup([rede_gas, gas]);
+
+
+
+
+ 
+    
+    var overlayMaps = {
+    "Cabeceiras":fregcamada,
+
+    "Gás":equipgas,
+  
+};
+
+  L.tileLayer('http://tile.cloudmade.com/[API-KEY]/29889/256/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+    maxZoom: 18
+  }).addTo(map);
+
+  
+  L.control.layers(null, overlayMaps).addTo(map);
+  L.control.scale({imperial: false}).addTo(map);
+
+ 
+
+ 
+
+  
+  
+  
+  </script>
+  
+</body>
+</html>
