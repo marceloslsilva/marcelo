@@ -1,0 +1,61 @@
+* {box-sizing: border-box}
+
+
+.arcGIS {width: 70%; background-color: #9099A2;}
+.css {width: 50%; background-color: #9099A2;}
+.autocad {width: 10%; background-color: #9099A2;}
+.javascript {width: 10%; background-color: #9099A2;}
+.responsabilidade {width: 90%; background-color: #9099A2;}
+.organização {width: 70%; background-color: #9099A2;}
+.proatividade {width: 65%; background-color: #9099A2;}
+.flexibilidade {width: 60%; background-color: #9099A2;}
+.portuguesa {width: 70%; background-color: #9099A2;}
+.inglês {width: 40%; background-color: #9099A2;}
+.espanhol {width: 35%; background-color: #9099A2;}
+.frances {width: 10%; background-color: #9099A2;}
+
+
+
+
+.bloco1{
+ 
+  width:30%;
+  float: left;   
+  padding: 10px;
+  margin: 10px;
+
+}
+.bloco1 ul{
+  padding: 0px;
+  margin: 0px;
+  list-style-type: none;
+
+}
+.bloco ul li a{
+  text-decoration: none;
+  display:block ;
+  width: 160px;
+  color: white;
+  background-color: black;
+  padding: 2px 4px;
+}
+.bloco ul li a:hover{
+  background-color: red;
+}
+
+.bloco2{
+
+  width: 30%;
+  float: left;
+  padding: 10px;
+  margin: 10px;
+  
+}
+
+
+.bloco3{
+
+  margin-left: 30%;
+  padding: 10xp;
+  margin: 10px;
+}
