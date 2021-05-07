@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Dados Demográficos</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+  <!-- Load Leaflet from CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@2.5.3/dist/esri-leaflet.js"
+    integrity="sha512-K0Vddb4QdnVOAuPJBHkgrua+/A9Moyv8AQEWi0xndQ+fqbRfAFd47z4A9u1AW/spLO0gEaiE1z98PK1gl5mC5Q=="
+    crossorigin=""></script>
+
+  <script src="JSON/freuesia.js"></script>
+
+
+
+</head>
+<body>
+
+<style>
+  #info-pane {
+    position: absolute;
+    top: 20px;
+    right: 70px;
+    z-index: 400;
+    padding: 1em;
+    background: white;
+  }
+
+  .legend {
+    line-height: 18px;
+    color: #555;
+    background: blanchedalmond;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+#map {
+
+width: 100%;
+height:600px;
+}
+
+
+</style>
+
+<div id="map"></div>
+<div id="info-pane" class="leaflet-bar">Dados</div>
+
+<script>
+  var map = L.map('map').setView([41.51533360600007, -7.991251320999936, ], 11.4);
+  var Ortofotomapa= L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{ attribution:'<a href="https://www.esri.com/en-us/home"</a>©️ESRI_Imaginary' })
+    .addTo(map); //will be our basemap.
+
+  
+
+var OpenStreet = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution:'<a href="https://www.openstreetmap.org/#map=17/-21.00148/-44.99806"</a>©️OpenStreetMap'});
+
+  var Esri_DeLorme = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Specialty/DeLorme_World_Base_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Copyright: &copy;2012 DeLorme'
+});
+
+
+  
+
+  var zipcodes = L.esri.featureLayer({
+    url: 'https://services5.arcgis.com/AMh9EzyFGgthLT1q/ArcGIS/rest/services/FREGUESIAS/FeatureServer/0',
+    simplifyFactor: 0.35,
+    precision: 5,
+    fields: ['FID', 'Freguesia', 'pop2011'],
+    style: {
+      color: '#A9A9A9',
+      weight: 2
+    }
+  }).addTo(map);
+
+  var oldId;
+
+  zipcodes.on('mouseout', function (e) {
+    document.getElementById('info-pane').innerHTML = 'Clica';
+    zipcodes.resetFeatureStyle(oldId);
+  });
+
+  zipcodes.on('mouseover', function (e) {
+    oldId = e.layer.feature.id;
+    document.getElementById('info-pane').innerHTML = e.layer.feature.properties.Freguesia + ' ' + e.layer.feature.properties.pop2011+"  habitantes";
+    zipcodes.setFeatureStyle(e.layer.feature.id, {
+      color: '#9D78D2',
+      weight: 3,
+      opacity: 1
+    });
+  });
+
+  function getColor(d) {
+    return d > 200  ? '#E31A1C' :
+           d > 100  ? '#FC4E2A' :
+           d > 50   ? '#FD8D3C' :
+           d > 20   ? '#FEB24C' :
+           d > 10   ? '#FED976' :
+                      '#FFEDA0';}
+  function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Densid_pop),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+  
+}
+
+
+var mapacores = L.geoJson(freuesia, {style: style})
+
+
+function rampa(c) {
+    return c > 1000  ? '#08519C' :
+           c > 461  ? '#08519C' :
+           c > 369  ? '#08519C' :
+           c > 277   ? '##3182BD' :
+           c > 184  ? '#6BAED6' :
+           c > 92.35   ? '#BDD7E7' :
+                      '#FFFFFF';}
+
+
+function cor(feature) {
+    return {
+        fillColor: rampa(feature.properties.I_Envelh11),
+        weight: 1,
+        opacity: 1,
+        color: 'black',
+        dashArray: '1',
+        fillOpacity: 0.7
+    };
+}
+
+var mapacor = L.geoJson(freuesia, {style: cor}).addTo(map);
+
+////Trilhos
+
+function style_wkl1(Trilho1){
+                return{
+        color: "#0000FF",
+        weight: 2,
+       opacity: 2 ,
+                };
+            }
+            
+    var Trilho1=L.geoJSON(Trilho1,{style: style_wkl1})
+    Trilho1.eachLayer(function(layer){layer.bindPopup("Trilho de Alto Esporões");
+    });
+    Trilho1.addTo(map);
+
+    var ribeira =L.geoJSON(ribeira,  {
+    pointToLayer: function (feature, latlng) {
+      var flickrsymbol = 'Icons/pedreste.png';
+      var mapIcon = L.icon({
+        iconUrl: flickrsymbol,
+        iconSize: [40, 40]
+      });
+        
+      return L.marker(latlng, {
+        icon: mapIcon
+      });
+    }})
+    ribeira.bindPopup(function (layer) {
+    return L.Util.template('<a href = "https://arcg.is/14ySTq0" target="_blank"> PR 7 Trilho da Ribeira de Cavez  </a', layer.feature.properties);
+  });
+    ribeira.addTo(map);
+
+
+    var Trilhoribeira = L.layerGroup([Trilho1,ribeira]);
+
+    
+
+    function style_wkl2(Trilho2){
+                return{
+        color: "#A52A2A",
+        weight: 2,
+       opacity: 1 ,
+                };
+            }
+
+            
+    
+            
+    var Trilho2=L.geoJSON(Trilho2,{style: style_wkl2})
+    Trilho2.eachLayer(function(layer){layer.bindPopup("<h2>Trilho de Alto Esporões</h2>");
+    });
+    Trilho2.addTo(map);
+
+    var esporoes =L.geoJSON(esporoes,  {
+    pointToLayer: function (feature, latlng) {
+      var flickrsymbol = 'Icons/pedreste.png';
+      var mapIcon = L.icon({
+        iconUrl: flickrsymbol,
+        iconSize: [40, 40]
+      });
+        
+      return L.marker(latlng, {
+        icon: mapIcon
+      });
+    }})
+    esporoes.bindPopup(function (layer) {
+    return L.Util.template('<a href = "https://pt.wikiloc.com/wikiloc/spatialArtifacts.do?event=view&id=51593582&measures=on&title=off&near=off&images=off&maptype=H" target="_blank"> Alto dos Esperoes </a', layer.feature.properties);
+  });
+    esporoes.addTo(map);
+
+    
+    var Trilhoesporoes = L.layerGroup([Trilho2, esporoes]);
+
+    
+
+
+    function style_wkl3(Trilho3){
+                return{
+        color: "#fd8d3c",
+        weight: 2,
+       opacity: 1 ,
+                };
+            }
+            
+    var Trilho3=L.geoJSON(Trilho3,{style: style_wkl3})
+    Trilho3.eachLayer(function(layer){layer.bindPopup("Trilho das Torrinheiras - serra da Cabreira");
+    });
+    Trilho3.addTo(map);
+
+    function style_wkl4(Trilho4){
+                return{
+        color: "#f03b20",
+        weight: 2,
+       opacity: 1 ,
+                };
+            }
+            
+    var torrinho =L.geoJSON(torrinho,  {
+    pointToLayer: function (feature, latlng) {
+      var flickrsymbol = 'Icons/pedreste.png';
+      var mapIcon = L.icon({
+        iconUrl: flickrsymbol,
+        iconSize: [40, 40]
+      });
+        
+      return L.marker(latlng, {
+        icon: mapIcon
+      });
+    }})
+    torrinho.bindPopup(function (layer) {
+    return L.Util.template('<a href = "https://pt.wikiloc.com/wikiloc/spatialArtifacts.do?event=view&id=10729335&measures=on&title=off&near=on&images=on&maptype=T" target="_blank"> Trilho das Torrinheiras - serra da Cabreira </a', layer.feature.properties);
+  });
+    torrinho.addTo(map);
+
+    
+
+ 
+
+    var Trilhotorrinheiras = L.layerGroup([Trilho3, torrinho]);
+
+
+    ////ecopista tamega
+var ecopista_ponto = L.geoJSON(ecopista_ponto,{
+    pointToLayer: function (feature, latlng) {
+      var ecosym = 'Icons/ecovia.png';
+      var ecoicon = L.icon({
+        iconUrl:ecosym ,
+        iconSize: [40, ]
+      });
+
+      return L.marker(latlng, {
+        icon: ecoicon
+      });
+    }})
+    ecopista_ponto.bindPopup(function (layer) {
+    return L.Util.template( '<img style="vertical-align:middle" src="Icons/ecopista.jpg">' + "<br></br>"+'<a href  = "https://cabeceirasdebasto.pt/equipamentos-publicos-ecopista" target="_blank"> Ecopista do Tâmega </a');
+  });
+    ecopista_ponto.addTo(map);
+
+    
+
+/////ecopista
+
+function styleaf(ecovia){
+                return{
+                    fillColor: "#ff7800",
+                    color: '#000',
+                    weight: 2,
+                    opacity: 1,
+                };
+            }
+            
+var ecovia =L.geoJSON(ecovia,{style: styleaf})
+    ecovia.eachLayer(function(layer){layer.bindPopup("Ecopista do Tâmega");
+    });
+    ecovia.addTo(map);
+
+    var Ecopistatamega = L.layerGroup([ecopista_ponto, ecovia]);
+
+      //----------------------Variação Populacional-----------------------------------------------
+      function stylefreg(fregcamada){
+                return{
+                    fillColor:"#4040ff",
+                    fillOpacity:0.10,
+                    color:"#4040ff",
+                    weight: 1,
+                };
+            }
+            
+    var fregcamada=L.geoJSON(freuesia,{style: stylefreg})
+    fregcamada.eachLayer(function(layer){layer.bindPopup("<h3 style ='text-align: center;'> <i>Variação populacional</i> </h3><hr/>"+"<h5>Freguesia: <h5>"+layer.feature.properties.Freguesia+"<h5>População 2001 </h5>"+layer.feature.properties.pop2001+"<h5>População 2011 </h5>"+layer.feature.properties.pop2011+"<h5>Variação Pop 2001-2011 %</h5>"+layer.feature.properties.var_p01_11);
+    });
+    fregcamada.addTo(map);
+
+
+    var baseMaps = {
+
+"Ortofotomapa":Ortofotomapa,
+"Openstreet":OpenStreet,
+"Esri DeLorme":Esri_DeLorme,
+};
+
+  var overlayMaps = {
+  
+    "Densidade Populacional":mapacores, 
+    "Indice de Envelhecimento":mapacor,
+    "Variação Populacional 2001-2011": fregcamada,
+
+};
+
+
+
+// geolocation:
+
+map.locate({setView: false, maxZoom: 12});
+
+function onLocationFound(e) {
+  yourLocation = L.marker(e.latlng);
+   overlayMaps["Tu"] = yourLocation;
+  yourLocation.bindPopup("<h3>Estás aqui!<h3>")
+
+  L.control.layers(baseMaps, overlayMaps).addTo(map);
+}
+
+map.on('locationfound', onLocationFound);
+
+function onLocationError(e) {
+  alert(e.message);
+
+  L.control.layers(baseMaps, overlayMaps).addTo(map);
+}
+
+L.control.scale({imperial: false}).addTo(map);
+
+
+
+
+
+
+
+//legenda1
+map.on('overlayadd', function (eventLayer) {
+  if (eventLayer.name === 'Densidade Populacional') {
+    legend.addTo(this); 
+  }else {  
+}});
+map.on('overlayremove', function (eventLayer) {
+  if (eventLayer.name === 'Densidade Populacional') {
+    this.removeControl(legend); 
+  }else {
+}});
+
+
+var legenda1 = L.control({position: 'bottomright'});
+legenda1.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'legend1');
+    div.innerHTML +=  '<img style="vertical-align:middle" src="Icons/legenda2.jpg">'
+    return div;
+};
+legenda1.addTo(map);
+
+map.on('overlayadd', function (eventLayer) {
+  if (eventLayer.name === 'Indice de Envelhecimento') {
+    legenda1.addTo(this); 
+  }else {  
+}});
+map.on('overlayremove', function (eventLayer) {
+  if (eventLayer.name === 'Indice de Envelhecimento') {
+    this.removeControl(legenda1); 
+  }else {
+}});
+
+
+
+
+
+
+
+
+
+
+
+            
+
+             
+
+</script>
+
+</body>
+</html>
